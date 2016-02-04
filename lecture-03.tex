@@ -1,0 +1,230 @@
+\documentclass{article}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage{amsmath,amsfonts,amssymb,amsthm,epsfig,epstopdf,titling,url,array}
+\usepackage{hyperref}
+\newcommand{\gen}{{\textsf{Gen}}}
+\newcommand{\enc}{{\textsf{Enc}}}
+\newcommand{\dec}{{\textsf{Dec}}}
+
+
+\newcommand{{\game}}{{\mathsf{PrivK}_{A, \prod}^{eav}}}
+\newcommand{{\gamed}}{{\mathsf{PrivK}_{A, \prod'}^{eav}}}
+\newcommand{{\negl}}{{\mathsf{negl}}}
+
+\newcommand{\BfPara}[1]{{\noindent\bf#1.}}
+\newcommand{\scheme}{{\prod=(\gen, \enc, \dec)}}
+\newcommand{\schemed}{{\prod'=(\gen', \enc', \dec')}}
+
+%\newcommand{{\is}}{{\leftarrow}}
+
+\theoremstyle{plain}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem*{cor}{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}[section]
+\newtheorem{conj}{Conjecture}[section]
+\newtheorem{exmp}{Example}[section]
+
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+\newtheorem*{note}{Note}
+
+
+\title{CSE 664: Lecture Notes -- Lecture 2}
+\author{Aziz Mohaisen}
+
+\begin{document}
+\maketitle
+
+In the previous lecture we outlined concepts associated with perfect security. In this lecture, we discuss relaxations of the notion of perfect security into what is known as computational security.
+
+\section{Computational cryptography}
+
+Theoritically, a cipher text $c$ does not contain any information about the plain text $m$, which is stated by the definition of perfect security. This is opposed to the computational security concept, which states that ``any scheme can be broken given enough time''. The idea of many security schemes is to make such time infeasible. To this end, computational security relaxes the perfect security in two ways:
+
+\begin{itemize}
+\item security is preserved against efficient adversaries only who run in a feasible amount of time. 
+\item adversaries will succeed with a small probability, small enough that we are not concerned it will happen. 
+\end{itemize}
+
+Now, we are in a position to define computational security in a more concrete form. 
+
+\begin{defn}
+A scheme is said to be $(t, \epsilon)-$secure if every adversary running a time at most $t$ is breaking the scheme with probability at most $\epsilon$.
+\end{defn}
+
+The concerete form of defining computational security can be further improved by more precise (although asymptotic) quantities, leading to the asymptotic approach. Given a security parameter $n$ that is used by all honest users at the initiation time of the scheme, we define the quantities $t$ and $\epsilon$ more precisely as follows:
+
+\begin{itemize}
+	\item feasible strategies and efficient algorithms are equated with adversary running in {\em polynomial time in} $n$. To characterize such adversaries, we use PPT (probabilistic polynomial time) adversaries. Why polynomial? Because you want to bound the number of steps an adversary takes to attack a scheme. Why probabilistic?
+	\item small success probability is inverse polynomial in $n$; i.e., $n^{-c}$ for some $c$. 
+\end{itemize}
+
+\begin{defn}
+A scheme is secure if every PPT adversary succeeds in breaking the scheme with negligible probability. 
+\end{defn}
+
+The benefits of the definition above are as follows. First, it does not rely on any specific hardware, and thus make it easier to compare various schemes in an abstract way. Second, it is good for understanding security concretely, with measurable quantities. 
+
+When we study a scheme, we are always concerned with the amount of work that an adversary needs to do in order to break a scheme. This is, the probability of success of the adversary. In $\prod = (\gen, \enc, \dec)$, the adversary wants to recover a key so that he can decrypt any $c$. This is,
+
+\begin{itemize}
+	\item given $c_1,\dots,c_\ell$ and the corresponding $m_1,\dots,m_\ell$, the adversary tries all $k\in K$ s.t. $\enc_k(m_i)=c_i$ for all $i$ and then considers $k$ as a key (notice that the effort of the adversary is polynomial in the security parameter). 
+	\item given $c_1,\dots,c_\ell$ and the corresponding $m_1,\dots,m_\ell$, the adversary tries at random one $k\in K$ s.t. $\enc_k(m_i)=c_i$ and uses that as a key. Note that the probability of such key of being found is negatively proportional to the effort; i.e., $1/|K|$.
+\end{itemize}
+
+This discuss leads us to defining the efficient algorithms and negligible probability of success. 
+
+\begin{defn}
+An algorithm A is said to be polynomial time if there exists a polynomial $p(.)$ s.t. for every input $x\in \{0,1\}^*$ where computation of $A(x)$ terminates after at most $p(|x|)$ steps. 
+\end{defn}
+In this definition, we use $ \{0,1\}^*$ to identify a fixed length strength and $|x|$ to identify the size of $x$. 
+
+By probabilistic in the above definition and the adversary characterization, we mean that the adversary can access a source of randomness of the length of the input $x$. Furthermore, we emphasize that having such benefit to the adversary would make the adversary at an advantage.
+
+\begin{note}
+What are sources for generating randomness? Why are they limited? Why is randomness important? We note that general random number generators like random in the C programming language are not that random. They are not something you want to use when designing a cryptographic protocol
+\end{note}
+
+\section{Negligible success probability} We use this term always to identify that a scheme is security. A function $f$ is negligible if for every polynomial $p(.)$ there exists an $N$ s.t. for all $n>N$ it holds that $f(n)<1/p(n)$. 
+
+\begin{exmp}
+$2^{-n}$, $2^{-\sqrt{n}}$, and $n^{-\log n}$ are all negligible for $n= 20, 400,$ and $32$ (respectively), since they are all less than $10^{-6}$ (notice that we define $p(n)$ here to be $10^{6}$, which is only good for the demonstration of this example.
+\end{exmp}
+
+Properties of the negligible probability. Let $\negl_1$ and $\negl_2$ be two negligible functions, then we have the following properties:
+
+\begin{itemize}
+	\item $\negl_3(n) = \negl_1(n) + \negl_2(n)$ is also negligible. 
+	\item $p(n)\negl_1(n)$ is also negligible, for any positive polynomial $p(n)$.
+\end{itemize}
+
+\subsubsection{Reduction Proofs}
+
+A proof of a system using reduction states that the system is secure as long as a given problem is hard. The reduction itself is converting an efficient algorithm $A$ that can break a system into a subroutine in an algorithm $A'$ that can break the hard problem. The procedure of conducting that proof is as follows:
+
+\begin{itemize}
+	\item fix a PPT $A$ attacking $\prod$ with success probability $\epsilon(n)$. 
+	\item construct $A'$ that attempts to solve $x\in X$ using a subroutine of $A$. $A'$ works as follows. Given $x\in X$, $A'$ will simulate $A$ on an instance of $\prod$ s.t. a) as far as $A$ can tell, it is interacting with $\prod$; the view of $A$ when it runs as a subroutine by $A'$ should be identical to the view of $A$ when it interacts with $\prod$, and b) if $A$ succeeds in breaking $\prod$, so does $A'$ in breaking $x\in X$ w.p. at least $1/p(n)$.
+	\item from a and b above, it is implied that $\epsilon(n)$ is not negligible, $A'$ solves $X$ with non-negligible probability $\epsilon(n)/p(n)$, which contradicts the assumption. \#
+\end{itemize} 
+
+To make use of this technique, we redefine the secure encryption algorithm we defined in the previous lecture, but in a computational sense. 
+
+\begin{defn}
+A private-key encryption algorithm is a tuple of PPT algorithms $(\gen, \enc, \dec)$ s.t. 
+
+\begin{itemize}
+	\item $\gen$ given $1^n$, it randomly and uniformly generates $k\in\{0,1\}^n$.
+	\item $\enc$ given $k$ and $m\in \{0,1\}^*$, it outputs $c\leftarrow \enc_k(m)$
+	\item $\dec$ given $c$ and $k$, it outputs $m:=\dec_k(c)$.
+\end{itemize}
+\end{defn}
+
+The properties of the above definition are as follows. First, for every $m, n, k$, $\dec_k(\enc_k(m))=m$. Second, if $\prod$ is only defined for $m\in \{0, 1\}^{\ell(n)}$, then we say that $\prod$ is a fixed-length algorithm for message of length $\ell(n)$. Third, $\gen$ always chooses $k$ uniformly at random.
+
+
+\section{Security definition}
+
+Recall from the previous lecture that a success probability of the adversary is characterized by the game $\game$, where the success probability is characterized by $P_r[\game=1]$. We modify the definition into $P_r[\game(n)=1]$, where we:
+\begin{itemize}
+	\item incorporate a security parameter $n$ (i.e., it is not perfectly secure anymore)
+	\item in defining the probability using the game explained earlier, we now instead required that the adversary outputs tow messages $m_0$ and $m_1$ that are of the same length.
+\end{itemize}
+
+\BfPara{Security definition as a game} Using the notion above, we now define the security as indistinguishability in the presence of an eavesdropper using this game as follows (let $\prod=(\gen, \enc, \dec)$ and $\game$):
+\begin{itemize}
+\item $A$ is given $1^n$ and outputs $m_0$ and $m_1$ s.t. $m_0=m_1$.
+\item an oracle computes $k\gets \gen(1^n)$; $b\gets \{0,1\}$; $c\gets \enc_k(m_b)$. The oracle sends $c$ to $A$. 
+\item $A$ outputs $b'\gets \{0,1\}$ and wins if $b'=b$ and loses others; this is $\game(n)=1$ iff $b'=b$ and $0$ otherwise.
+\end{itemize}
+
+We use the above game to define an indistinguishable encryption scheme as follows.
+
+\begin{defn}\label{ind}
+$\scheme$ is said to be an indistinguishable encryption scheme in the presence of an eavesdropper iff for all PPT adversaries $A$ there exists a negligible probability $\negl(n)$ s.t.
+$$
+P_r[\game(n)=1]\leq \frac{1}{2} + \negl(n)
+$$
+
+or (where $\game(n,b)$ is defined accordingly): 
+$$
+|P_r[\text{output}(\game(n,0))=1] - P_r[\text{output}(\game(n,1))=1]| \leq \negl(n)
+$$
+\end{defn}
+
+\section{Pseudorandomness}
+
+The small negligible probability in the above definition is due to randomness and its imperfectness. Here, we define what we mean by pseudorandom functions, heavily used in the rest of this course. 
+
+\begin{defn}
+	Let $\ell(n)$ be a polynomial and let $G$ be a deterministic polynomial time algorithm s.t. for input $s\in \{0,1\}^n$ it outputs a string of length $\ell(n)$. We say that $G$ is pseudorandom generator (PRG) iff:
+	\begin{itemize}
+		\item (expansion) $\ell(n)> n$. 
+		\item (pseudorandomness) for every PPT distinguisher $D$ there exist $\negl(n)$ s.t. for every random string $r\gets\{0,1\}^{\ell(n)}$, seed $s\gets\{0,1\}^n$:
+		$$
+		|P_r[D(r)=1] - P_r[D(G(s))=1]|\leq \negl(n)
+		$$
+		(this is, the distinguisher will not be able to tell if a bit presented to him is a random or pseudorandom one.)
+	\end{itemize}
+	In the above definition, $\ell(.)$ is called the expansion factor.
+\end{defn}
+
+Some of the questions that are central in the above definition is how large should the seed be? How much of an expansion factor should we have for practical applications and schemes?
+
+\begin{note}
+We do not for sure if PRGs exist (with a proof), but we believe they exist. 
+\end{note}
+
+\section{Constructing a secure encryption scheme}
+
+Using the above PRG definition, we can construct fixed-length secure encryption algorithms similar to those consutrcted using the OTP, although secure in the computational sense. This is, given a PRG, we construct a key $k$ using the PRG as a pad, and compute a cipher as the result of the bitwise xor of the key and a message $m$. More formally, such scheme ** is defined as follows (again, we use the notion $\scheme$ to define the scheme).
+\begin{itemize}
+	\item $\gen$: takes as an input $1^n$, and outputs $k$; this is $k\gets\gen(1^n)$.
+	\item $\enc$: given $m\gets\{0,1\}^{\ell(n)}$ and $k$, $c$ is defined as $c\gets\enc_k(m):=G(k)\oplus m$
+	\item $\dec$: given $c$ and $k$, $m$ is computed as $m:=\dec_k(c):=G(k)\oplus c$
+\end{itemize}
+
+\begin{thm}
+The scheme ** is an indistinguishable encryption scheme in the presence of an eavesdropper.
+\end{thm}
+\begin{proof}
+The idea of the proof is very simple. First, we show that there exist a PPT $A$ that for the definition of the indistinguishable encryption scheme in definition \autoref{ind} does not hold, then we use that $A$ to break $G(k)$. In the following, we go over the proof a step by step. As a base, we note that if we use a truly random number instead of the PRG, the scheme is an OTP, and it is secure. 
+
+If the definition in \autoref{ind} does not hold, then $A$ can distinguish $G$ from a random string, and the reduction makes this expolicit. For that,let $A$ be a PPT adversary, and assume $\epsilon(n)$ s.t.
+$$
+\epsilon(n) = P_r[\game(n) = 1 ] -\frac{1}{2}
+$$
+Now, we use $A$ to build $D$ 9the distinguisher) with probability $\epsilon(n)$ that can distinguish a random number from a pseudorandom number. This is, given $w\in\{0,1\}^{\ell(n)}$, the following steps are performed:
+\begin{enumerate}
+\item run $A(1^n)$ to obtain $m_0, m_1$ with the same length of $\ell(n)$. 
+\item choose $b \gets \{0,1\}$ and $c:=w\oplus m_b$.
+\item given $c$ to $A$, he obtains $b'\gets\{0,1\}$, and outputs $1$ iff $b=b'$ and $0$ otherwise.
+\end{enumerate}
+To complete the proof, we further define $\schemed$ as an OTP. By the definition of perfect secrecy, we know that:
+
+$$
+P_r[\game(n) = 1] = \frac{1}{2}
+$$
+Furthermore, if $w$ is chosen uniformly at random, we have (1)
+$$
+P_r[D(w) = 1] = P_r [\gamed(n) = 1] = \frac{1}{2}
+$$
+However, when $w  = G(k)$, for $k \gets\{0,1\}^n$, we have (2):
+$$
+P_r[D(w) = 1] = P_r[D(G(k)) = 1] = P_r[\game(n)=1] = \frac{1}{2} + \epsilon(n).
+$$
+
+Combining 1 and 2, we have 
+
+$$
+|P_r[D(w) - 1] - P_r[D(G(k)) = 1]| = \epsilon(n)
+$$
+
+which concludes the proof.
+\end{proof}
+
+\end{document} 
